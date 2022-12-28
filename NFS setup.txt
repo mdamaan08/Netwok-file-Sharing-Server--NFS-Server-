@@ -1,0 +1,54 @@
+Server M/C:
+
+Step 1:Install nfs server.
+sudo apt install -y nfs-kernel-server
+
+Step 2:Create shared directory to serve
+sudo mkdir /share
+sudo chown nobody:nogroup /share
+sudo chmod 777 /share
+
+Step 3. Add share to nfs exports
+sudo vim /etc/exports
+
+Step 4:Add the following line to /etc/exports.
+/share *(rw,sync,no_subtree_check)
+
+Step 5: Restart nfs-kernel-server
+To update the nfs-server with the new /etc/exports it needs to be restarted.
+sudo systemctl restart nfs-kernel-server
+
+Step 6:
+sudo systemctl status nfs-kernel-server
+
+Step 7:Confirm that the directory is being shared by running
+sudo exportfs
+
+Step 8:To check NFS server create a file in :
+cd /share
+nano hi.txt
+
+
+
+
+Client M/C:
+
+Step 1: If you want to access the nfs server from outside your Google cloud project you’ll need to add some firewall rules.
+gcloud compute firewall-rules create nfs \
+--allow=tcp:111,udp:111,tcp:2049,udp:2049 --target-tags=nfs
+
+Step 2:
+sudo apt install nfs-common
+
+Step 3:
+mkdir ~/test_mount
+
+Step 4:
+sudo mount -t nfs -o vers=4 -o resvport 10.0.1.5:/public ~/test_mount
+
+Step 5: You will be able to see the content of NFS server here
+cd test_mount/
+ls
+
+# Test nfs before cleaning up.
+sudo umount ~/test_mount && rm -r ~/test_mount
